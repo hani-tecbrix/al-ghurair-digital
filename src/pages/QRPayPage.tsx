@@ -8,12 +8,12 @@ import { useNavigate } from 'react-router-dom';
 const QRPayPage = () => {
   const navigate = useNavigate();
   const [scanMode, setScanMode] = useState(false);
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const recentQRPayments = [
     { id: 1, merchant: 'Carrefour Mall of Emirates', amount: 156.75, date: '2024-01-10' },
     { id: 2, merchant: 'Costa Coffee DIFC', amount: 32.50, date: '2024-01-09' },
-    { id: 3,merchant: 'LuLu Hypermarket', amount: 293.25, date: '2024-01-05' },
+    { id: 3, merchant: 'LuLu Hypermarket', amount: 293.25, date: '2024-01-05' },
   ];
 
   const handleFileBrowse = () => {
@@ -116,7 +116,7 @@ const QRPayPage = () => {
             </Card>
           ))}
         </div>
-      </Card>
+      </div>
 
       {/* Generate Your QR */}
       <Card className="border-0 shadow-sm bg-[#FCFFEF]">
