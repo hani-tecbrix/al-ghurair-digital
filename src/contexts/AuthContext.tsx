@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: User | null;
@@ -32,6 +33,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   useEffect(() => {
+    // DEMO MODE: Create a demo user for preview purposes
+    const demoUser = {
+      id: 'demo-user-123',
+      email: 'demo@example.com',
+      phone: '+971501234567',
+      user_metadata: {
+        full_name: 'Ahmed Al Mansouri',
+        phone: '+971501234567'
+      }
+    } as User;
+    
+    const demoSession = {
+      access_token: 'demo-token',
+      refresh_token: 'demo-refresh',
+      user: demoUser
+    } as Session;
+    
+    // Set demo user and session after a short delay to simulate loading
+    setTimeout(() => {
+      setUser(demoUser);
+      setSession(demoSession);
+      setLoading(false);
+    }, 1000);
+
+    // Comment out the supabase auth listener for demo purposes
+    /*
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -61,10 +88,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, location.pathname]);
+    */
+   
+    // For demo purposes, don't unsubscribe
+    return () => {};
+  }, []);
 
   const sendOTP = async (phone: string) => {
     try {
+      // Demo mode: Always succeed
+      toast.success('Demo mode: OTP sent successfully');
+      return { error: null };
+      
+      /*
       const { error } = await supabase.auth.signInWithOtp({
         phone: phone,
         options: {
@@ -74,6 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
       return { error };
+      */
     } catch (error) {
       return { error };
     }
@@ -81,12 +118,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (phone: string, otp: string) => {
     try {
+      // Demo mode: Always succeed with demo user
+      toast.success('Demo mode: Sign in successful');
+      
+      // Navigate to home after "successful" login
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+      
+      return { error: null };
+      
+      /*
       const { error } = await supabase.auth.verifyOtp({
         phone: phone,
         token: otp,
         type: 'sms'
       });
       return { error };
+      */
     } catch (error) {
       return { error };
     }
@@ -94,6 +143,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (phone: string, fullName: string) => {
     try {
+      // Demo mode: Always succeed
+      toast.success('Demo mode: Sign up successful');
+      return { error: null };
+      
+      /*
       const { error } = await supabase.auth.signUp({
         phone: phone,
         password: Math.random().toString(36).substring(7), // Temporary password
@@ -105,14 +159,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
       return { error };
+      */
     } catch (error) {
       return { error };
     }
   };
 
   const signOut = async () => {
+    // Demo mode: Just navigate to auth page
+    toast.success('Demo mode: Signed out successfully');
+    navigate('/auth');
+    
+    /*
     const { error } = await supabase.auth.signOut();
     if (error) console.error('Error signing out:', error);
+    */
   };
 
   const value = {
