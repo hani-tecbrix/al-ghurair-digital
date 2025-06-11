@@ -73,6 +73,7 @@ html {
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -175,6 +176,17 @@ body {
   }
 }
 
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 @keyframes pulse {
   0%, 100% { 
     opacity: 1; 
@@ -186,12 +198,27 @@ body {
   }
 }
 
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25%);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.6s ease-out;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.3s ease-out;
+  animation: scaleIn 0.4s ease-out;
 }
 
 .animate-pulse {
@@ -199,11 +226,40 @@ body {
 }
 
 .animate-slide-up {
-  animation: slideInUp 0.3s ease-out;
+  animation: slideInUp 0.5s ease-out;
 }
 
 .animate-slide-down {
-  animation: slideInDown 0.3s ease-out;
+  animation: slideInDown 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.4s ease-out;
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Delay utilities */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-700 {
+  animation-delay: 0.7s;
 }
 
 /* Focus states */
@@ -231,9 +287,17 @@ body {
   backdrop-filter: blur(4px);
 }
 
+.backdrop-blur-md {
+  backdrop-filter: blur(8px);
+}
+
 /* Enhanced micro-interactions */
 .group:hover .group-hover\:scale-105 {
   transform: scale(1.05);
+}
+
+.group:hover .group-hover\:scale-110 {
+  transform: scale(1.1);
 }
 
 .transition-all {
@@ -254,4 +318,45 @@ body {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200px 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface-white: #1F1F23;
+    --color-surface-cream: #2A2A2E;
+    --color-ink: #FFFFFF;
+    --color-mid-black: #B4B1C6;
+    --color-muted: #8B8B8B;
+  }
+}
+
+/* Improved accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Status indicators */
+.status-completed {
+  @apply text-green-600 bg-green-50 border-green-200;
+}
+
+.status-pending {
+  @apply text-yellow-600 bg-yellow-50 border-yellow-200;
+}
+
+.status-failed {
+  @apply text-red-600 bg-red-50 border-red-200;
+}
+
+.status-in-process {
+  @apply text-blue-600 bg-blue-50 border-blue-200;
+}
+
+.status-scheduled {
+  @apply text-purple-600 bg-purple-50 border-purple-200;
 }

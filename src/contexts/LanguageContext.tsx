@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 type Language = 'en' | 'ar';
 
@@ -14,6 +14,7 @@ const translations = {
     // Navigation
     'nav.home': 'Home',
     'nav.services': 'Services',
+    'nav.transactions': 'Transactions',
     'nav.profile': 'Profile',
     
     // Common
@@ -24,6 +25,11 @@ const translations = {
     'common.continue': 'Continue',
     'common.send': 'Send',
     'common.save': 'Save',
+    'common.edit': 'Edit',
+    'common.delete': 'Delete',
+    'common.confirm': 'Confirm',
+    'common.retry': 'Retry',
+    'common.close': 'Close',
     
     // Auth
     'auth.welcome': 'Welcome to Al Ghurair Exchange',
@@ -35,19 +41,19 @@ const translations = {
     
     // Dashboard
     'dashboard.balance': 'Available Balance',
-    'dashboard.quickActions': 'Quick Actions',
+    'dashboard.quickActions': 'Financial Services',
     'dashboard.recentTransactions': 'Recent Transactions',
-    'dashboard.sendMoney': 'Send Money',
-    'dashboard.payBills': 'Pay Bills',
-    'dashboard.qrPay': 'QR Pay',
-    'dashboard.addCard': 'Add Card',
+    'dashboard.sendMoney': 'International Transfer',
+    'dashboard.payBills': 'Bill Payment',
+    'dashboard.qrPay': 'QR Payment',
+    'dashboard.addCard': 'Manage Cards',
     
     // Services
-    'services.sendMoney': 'Send Money',
-    'services.payBills': 'Pay Bills',
-    'services.qrPay': 'QR Pay',
+    'services.sendMoney': 'International Transfer',
+    'services.payBills': 'Bill Payment',
+    'services.qrPay': 'QR Payment',
     'services.manageCards': 'Manage Cards',
-    'services.recipients': 'Recipients',
+    'services.recipients': 'Beneficiaries',
     
     // Profile
     'profile.myProfile': 'My Profile',
@@ -56,11 +62,28 @@ const translations = {
     'profile.language': 'Language',
     'profile.theme': 'Theme',
     'profile.logout': 'Logout',
+    'profile.uaePassVerified': 'UAE Pass Verified',
+    'profile.notVerified': 'Not Verified',
+    
+    // Transactions
+    'transaction.completed': 'Completed',
+    'transaction.inProcess': 'In Process',
+    'transaction.scheduled': 'Scheduled',
+    'transaction.failed': 'Failed',
+    'transaction.pending': 'Pending',
+    
+    // Cards
+    'cards.addNew': 'Add New Card',
+    'cards.freeze': 'Freeze Card',
+    'cards.unfreeze': 'Unfreeze Card',
+    'cards.setAsDefault': 'Set as Default',
+    'cards.viewDetails': 'View Details',
   },
   ar: {
     // Navigation
     'nav.home': 'الرئيسية',
     'nav.services': 'الخدمات',
+    'nav.transactions': 'المعاملات',
     'nav.profile': 'الملف الشخصي',
     
     // Common
@@ -71,6 +94,11 @@ const translations = {
     'common.continue': 'متابعة',
     'common.send': 'إرسال',
     'common.save': 'حفظ',
+    'common.edit': 'تعديل',
+    'common.delete': 'حذف',
+    'common.confirm': 'تأكيد',
+    'common.retry': 'إعادة المحاولة',
+    'common.close': 'إغلاق',
     
     // Auth
     'auth.welcome': 'مرحباً بك في الغرير للصرافة',
@@ -82,15 +110,15 @@ const translations = {
     
     // Dashboard
     'dashboard.balance': 'الرصيد المتاح',
-    'dashboard.quickActions': 'إجراءات سريعة',
+    'dashboard.quickActions': 'الخدمات المالية',
     'dashboard.recentTransactions': 'المعاملات الأخيرة',
-    'dashboard.sendMoney': 'إرسال المال',
+    'dashboard.sendMoney': 'التحويل الدولي',
     'dashboard.payBills': 'دفع الفواتير',
     'dashboard.qrPay': 'الدفع بـ QR',
-    'dashboard.addCard': 'إضافة بطاقة',
+    'dashboard.addCard': 'إدارة البطاقات',
     
     // Services
-    'services.sendMoney': 'إرسال المال',
+    'services.sendMoney': 'التحويل الدولي',
     'services.payBills': 'دفع الفواتير',
     'services.qrPay': 'الدفع بـ QR',
     'services.manageCards': 'إدارة البطاقات',
@@ -103,6 +131,22 @@ const translations = {
     'profile.language': 'اللغة',
     'profile.theme': 'المظهر',
     'profile.logout': 'تسجيل الخروج',
+    'profile.uaePassVerified': 'تم التحقق بممر الإمارات',
+    'profile.notVerified': 'غير محقق',
+    
+    // Transactions
+    'transaction.completed': 'مكتمل',
+    'transaction.inProcess': 'قيد المعالجة',
+    'transaction.scheduled': 'مجدول',
+    'transaction.failed': 'فشل',
+    'transaction.pending': 'معلق',
+    
+    // Cards
+    'cards.addNew': 'إضافة بطاقة جديدة',
+    'cards.freeze': 'تجميد البطاقة',
+    'cards.unfreeze': 'إلغاء تجميد البطاقة',
+    'cards.setAsDefault': 'تعيين كافتراضي',
+    'cards.viewDetails': 'عرض التفاصيل',
   }
 };
 
@@ -119,10 +163,19 @@ export const useLanguage = () => {
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
   const [language, setLanguageState] = useState<Language>('en');
 
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language') as Language;
+    if (savedLanguage && ['en', 'ar'].includes(savedLanguage)) {
+      setLanguageState(savedLanguage);
+      document.documentElement.dir = savedLanguage === 'ar' ? 'rtl' : 'ltr';
+    }
+  }, []);
+
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('language', lang);
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
   };
 
   const t = (key: string): string => {
