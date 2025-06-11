@@ -19,17 +19,17 @@ const App = () => (
     <TooltipProvider>
       <ThemeProvider>
         <LanguageProvider>
-          <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
               <Routes>
                 <Route path="/splash" element={<SplashScreen />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/*" element={<MainApp />} />
               </Routes>
-            </BrowserRouter>
-          </AuthProvider>
+            </AuthProvider>
+          </BrowserRouter>
         </LanguageProvider>
       </ThemeProvider>
     </TooltipProvider>
