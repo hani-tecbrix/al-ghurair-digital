@@ -1,116 +1,83 @@
 
-import { Bell, Globe, Moon, Sun, ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Bell, Globe, Moon, Sun, LogOut, Settings, User } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 
 const Header = () => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const isHomePage = location.pathname === '/';
-  const pageTitle = getPageTitle(location.pathname, t);
+  const handleLanguageChange = () => {
+    setLanguage(language === 'en' ? 'ar' : 'en');
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   return (
-    <header className="bg-white/95 dark:bg-gray-900/95 border-b border-[#F6F7F9] dark:border-gray-700 safe-area-top sticky top-0 z-50 backdrop-blur-md transition-all duration-300">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Left Section */}
+    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 transition-colors duration-200">
+      <div className="flex items-center justify-between">
+        {/* Logo and Brand */}
         <div className="flex items-center space-x-3">
-          {!isHomePage && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(-1)}
-              className="p-2 h-auto hover:bg-[#F6F7F9] dark:hover:bg-gray-700 rounded-lg transition-all duration-200 hover:scale-105"
-              aria-label="Go back"
-            >
-              <ArrowLeft className="w-5 h-5 text-[#918EA4] dark:text-gray-300" />
-            </Button>
-          )}
-          
-          {isHomePage ? (
-            <div className="flex items-center space-x-3 animate-fade-in">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#003D31] to-[#002822] rounded-lg flex items-center justify-center shadow-lg">
-                <img 
-                  src="/lovable-uploads/43e1811d-01e3-492d-ae97-297a3e5efc27.png" 
-                  alt="Al Ghurair Exchange"
-                  className="w-6 h-6 object-contain"
-                />
-              </div>
-              <div>
-                <span className="font-bold text-[#171717] dark:text-white text-lg">Al Ghurair</span>
-                <p className="text-xs text-[#918EA4] dark:text-gray-300 -mt-1">Exchange</p>
-              </div>
-            </div>
-          ) : (
-            <h1 className="text-lg font-semibold text-[#171717] dark:text-white truncate max-w-48 animate-slide-in">
-              {pageTitle}
-            </h1>
-          )}
+          <div className="w-10 h-10 bg-gradient-to-br from-[#003D31] to-[#002822] dark:from-[#F0FF3D] dark:to-[#E0EF2D] rounded-xl flex items-center justify-center shadow-lg">
+            <img 
+              src="/lovable-uploads/43e1811d-01e3-492d-ae97-297a3e5efc27.png" 
+              alt="Al Ghurair Exchange"
+              className="w-8 h-8 object-contain"
+            />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-[#003D31] dark:text-white">Al Ghurair</h1>
+            <p className="text-xs text-[#918EA4] dark:text-gray-400 -mt-1">Exchange</p>
+          </div>
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center space-x-1">
-          {/* Language Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="p-2 h-auto hover:bg-[#F6F7F9] dark:hover:bg-gray-700 rounded-lg transition-all duration-200 hover:scale-105 group"
-                aria-label="Change language"
-              >
-                <Globe className="w-5 h-5 text-[#918EA4] dark:text-gray-300 group-hover:text-[#003D31] dark:group-hover:text-white transition-colors" />
-                <span className="ml-1 text-xs font-medium text-[#918EA4] dark:text-gray-300 uppercase group-hover:text-[#003D31] dark:group-hover:text-white transition-colors">
-                  {language}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32 bg-white dark:bg-gray-800 border border-[#F6F7F9] dark:border-gray-600 shadow-xl animate-scale-in">
-              <DropdownMenuItem 
-                onClick={() => setLanguage('en')}
-                className={cn(
-                  "cursor-pointer transition-colors hover:bg-[#F6F7F9] dark:hover:bg-gray-700",
-                  language === 'en' && "bg-[#F6F7F9] dark:bg-gray-700 text-[#003D31] dark:text-white font-medium"
-                )}
-              >
-                🇺🇸 English
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setLanguage('ar')}
-                className={cn(
-                  "cursor-pointer transition-colors hover:bg-[#F6F7F9] dark:hover:bg-gray-700",
-                  language === 'ar' && "bg-[#F6F7F9] dark:bg-gray-700 text-[#003D31] dark:text-white font-medium"
-                )}
-              >
-                🇦🇪 العربية
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Right Side Controls */}
+        <div className="flex items-center space-x-2">
+          {/* Language Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLanguageChange}
+            className="h-9 w-9 p-0 rounded-lg hover:bg-[#F6F7F9] dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105"
+          >
+            <Globe className="h-4 w-4 text-[#918EA4] dark:text-gray-400" />
+          </Button>
+          <Badge 
+            variant="outline" 
+            className="text-xs px-2 py-1 border-[#F0FF3D] text-[#003D31] dark:text-[#F0FF3D] dark:border-[#F0FF3D] bg-[#F0FF3D]/10 dark:bg-[#F0FF3D]/10 hover:bg-[#F0FF3D]/20 dark:hover:bg-[#F0FF3D]/20 transition-colors cursor-pointer"
+            onClick={handleLanguageChange}
+          >
+            {language.toUpperCase()}
+          </Badge>
 
           {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleTheme}
-            className="p-2 h-auto hover:bg-[#F6F7F9] dark:hover:bg-gray-700 rounded-lg transition-all duration-200 hover:scale-105 group"
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+            className="h-9 w-9 p-0 rounded-lg hover:bg-[#F6F7F9] dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105"
           >
             {theme === 'light' ? (
-              <Moon className="w-5 h-5 text-[#918EA4] dark:text-gray-300 group-hover:text-[#003D31] dark:group-hover:text-white transition-all duration-300" />
+              <Moon className="h-4 w-4 text-[#918EA4] dark:text-gray-400" />
             ) : (
-              <Sun className="w-5 h-5 text-[#918EA4] dark:text-gray-300 group-hover:text-yellow-500 transition-all duration-300" />
+              <Sun className="h-4 w-4 text-[#918EA4] dark:text-gray-400" />
             )}
           </Button>
 
@@ -119,37 +86,69 @@ const Header = () => {
             variant="ghost"
             size="sm"
             onClick={() => navigate('/notifications')}
-            className="p-2 h-auto relative hover:bg-[#F6F7F9] dark:hover:bg-gray-700 rounded-lg transition-all duration-200 hover:scale-105 group"
-            aria-label="View notifications"
+            className="h-9 w-9 p-0 rounded-lg hover:bg-[#F6F7F9] dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 relative"
           >
-            <Bell className="w-5 h-5 text-[#918EA4] dark:text-gray-300 group-hover:text-[#003D31] dark:group-hover:text-white transition-colors" />
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 w-4 h-4 p-0 flex items-center justify-center text-xs animate-pulse bg-red-500 hover:bg-red-600"
-            >
-              3
-            </Badge>
+            <Bell className="h-4 w-4 text-[#918EA4] dark:text-gray-400" />
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-800 animate-pulse"></div>
           </Button>
+
+          {/* User Profile Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0 rounded-lg hover:bg-[#F6F7F9] dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105"
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-[#003D31] to-[#002822] dark:from-[#F0FF3D] dark:to-[#E0EF2D] rounded-full flex items-center justify-center text-white dark:text-[#003D31] text-xs font-semibold">
+                  {user?.user_metadata?.full_name?.charAt(0) || 'A'}
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="end" 
+              className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl z-50"
+            >
+              <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+                <p className="text-sm font-medium text-[#171717] dark:text-white">
+                  {user?.user_metadata?.full_name || 'Ahmed Al Mansouri'}
+                </p>
+                <p className="text-xs text-[#918EA4] dark:text-gray-400">
+                  {user?.phone || '+971 50 123 4567'}
+                </p>
+              </div>
+              
+              <DropdownMenuItem 
+                onClick={() => navigate('/profile')}
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <User className="mr-2 h-4 w-4" />
+                Profile Settings
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem 
+                onClick={() => navigate('/profile')}
+                className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Preferences
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator className="bg-gray-100 dark:bg-gray-700" />
+              
+              <DropdownMenuItem 
+                onClick={handleLogout}
+                className="cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
   );
-};
-
-// Helper function to get page titles
-const getPageTitle = (pathname: string, t: any): string => {
-  const titleMap: Record<string, string> = {
-    '/send-money': t('services.sendMoney'),
-    '/pay-bills': t('services.payBills'),
-    '/qr-pay': t('services.qrPay'),
-    '/cards': t('services.manageCards'),
-    '/transactions': t('nav.transactions'),
-    '/notifications': t('profile.notifications'),
-    '/profile': t('profile.myProfile'),
-    '/services': t('nav.services'),
-  };
-  
-  return titleMap[pathname] || 'Al Ghurair Exchange';
 };
 
 export default Header;

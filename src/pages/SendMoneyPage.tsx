@@ -146,38 +146,46 @@ const SendMoneyPage = () => {
 
   const renderAmountStep = () => (
     <div className="space-y-6 animate-fade-in">
-      <Card className="border-0 shadow-sm bg-gradient-to-br from-[#FCFFEF] to-white">
+      <Card className="border-0 shadow-sm bg-gradient-to-br from-[#FCFFEF] to-white dark:from-gray-800 dark:to-gray-900">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm text-[#918EA4]">International Transfer Amount</CardTitle>
+          <CardTitle className="text-sm text-[#918EA4] dark:text-gray-400">International Transfer Amount</CardTitle>
         </CardHeader>
         <CardContent className="pt-0 space-y-4">
           <div className="flex items-center space-x-2">
-            <span className="text-2xl font-bold text-[#003D31]">AED</span>
+            <span className="text-2xl font-bold text-[#003D31] dark:text-white">AED</span>
             <Input
               type="number"
               placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="text-3xl font-bold border-0 p-0 h-auto shadow-none text-[#003D31] placeholder:text-[#918EA4] bg-transparent focus-visible:ring-0"
+              className="text-3xl font-bold border-0 p-0 h-auto shadow-none text-[#003D31] dark:text-white placeholder:text-[#918EA4] dark:placeholder:text-gray-400 bg-transparent focus-visible:ring-0"
               autoFocus
             />
           </div>
           
           {/* Country Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#171717]">Transfer to Country</label>
+            <label className="text-sm font-medium text-[#171717] dark:text-white">Transfer to Country</label>
             <Select onValueChange={handleCountrySelect}>
-              <SelectTrigger className="w-full h-12 border-2 border-[#F6F7F9] focus:border-[#003D31]">
+              <SelectTrigger className="w-full h-12 border-2 border-[#F6F7F9] dark:border-gray-600 focus:border-[#003D31] dark:focus:border-[#F0FF3D] dark:bg-gray-800">
                 <SelectValue placeholder="Select destination country" />
               </SelectTrigger>
-              <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+              <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 shadow-lg z-50">
                 {countries.map((country) => (
-                  <SelectItem key={country.code} value={country.code} className="hover:bg-gray-50">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg">{country.flag}</span>
-                      <div>
-                        <p className="font-medium">{country.name}</p>
-                        <p className="text-xs text-[#918EA4]">{country.currency}</p>
+                  <SelectItem key={country.code} value={country.code} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">{country.flag}</span>
+                        <div>
+                          <p className="font-medium dark:text-white">{country.name}</p>
+                          <p className="text-xs text-[#918EA4] dark:text-gray-400">{country.currency}</p>
+                        </div>
+                      </div>
+                      <div className="text-right ml-4">
+                        <p className="text-sm font-semibold text-[#003D31] dark:text-[#F0FF3D]">
+                          {country.rate} {country.currency}
+                        </p>
+                        <p className="text-xs text-[#918EA4] dark:text-gray-400">per AED</p>
                       </div>
                     </div>
                   </SelectItem>
@@ -188,26 +196,26 @@ const SendMoneyPage = () => {
 
           {/* Live Currency Conversion */}
           {selectedCountry && (
-            <div className="bg-gradient-to-r from-[#003D31]/5 to-[#F0FF3D]/20 rounded-lg p-4 border border-[#F0FF3D]/30">
+            <div className="bg-gradient-to-r from-[#003D31]/5 to-[#F0FF3D]/20 dark:from-gray-700 dark:to-gray-600 rounded-lg p-4 border border-[#F0FF3D]/30 dark:border-gray-500">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
-                  <Globe className="w-4 h-4 text-[#003D31]" />
-                  <span className="text-sm font-medium text-[#003D31]">Live Exchange Rate</span>
-                  {isLoadingRates && <RefreshCw className="w-4 h-4 animate-spin text-[#003D31]" />}
+                  <Globe className="w-4 h-4 text-[#003D31] dark:text-[#F0FF3D]" />
+                  <span className="text-sm font-medium text-[#003D31] dark:text-white">Live Exchange Rate</span>
+                  {isLoadingRates && <RefreshCw className="w-4 h-4 animate-spin text-[#003D31] dark:text-[#F0FF3D]" />}
                 </div>
-                <Badge variant="secondary" className="bg-[#F0FF3D] text-[#003D31]">
+                <Badge variant="secondary" className="bg-[#F0FF3D] text-[#003D31] dark:bg-[#F0FF3D] dark:text-[#003D31]">
                   Live
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#918EA4]">
+                <span className="text-sm text-[#918EA4] dark:text-gray-300">
                   1 AED = {selectedCountry.rate} {selectedCountry.currency}
                 </span>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-[#003D31]">
+                  <p className="text-lg font-bold text-[#003D31] dark:text-white">
                     {selectedCountry.currency} {getConvertedAmount()}
                   </p>
-                  <p className="text-xs text-[#918EA4]">Recipient will receive</p>
+                  <p className="text-xs text-[#918EA4] dark:text-gray-400">Recipient will receive</p>
                 </div>
               </div>
             </div>
@@ -428,10 +436,10 @@ const SendMoneyPage = () => {
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-300",
               step === stepName 
-                ? "bg-[#003D31] text-white scale-110" 
+                ? "bg-[#003D31] dark:bg-[#F0FF3D] text-white dark:text-[#003D31] scale-110" 
                 : index < ['amount', 'beneficiary', 'confirmation'].indexOf(step)
                 ? "bg-[#F0FF3D] text-[#003D31]"
-                : "bg-[#F6F7F9] text-[#918EA4]"
+                : "bg-[#F6F7F9] dark:bg-gray-700 text-[#918EA4] dark:text-gray-400"
             )}>
               {index + 1}
             </div>
@@ -440,7 +448,7 @@ const SendMoneyPage = () => {
                 "w-8 h-0.5 mx-2 transition-all duration-300",
                 index < ['amount', 'beneficiary', 'confirmation'].indexOf(step)
                   ? "bg-[#F0FF3D]"
-                  : "bg-[#F6F7F9]"
+                  : "bg-[#F6F7F9] dark:bg-gray-700"
               )} />
             )}
           </div>
@@ -637,7 +645,7 @@ const NewBeneficiaryModal = ({
   );
 };
 
-// New Shareable Receipt Modal Component
+// Enhanced Shareable Receipt Modal Component with Al Ghurair Branding
 const ShareableReceiptModal = ({ 
   onClose, 
   transferData 
@@ -663,8 +671,8 @@ const ShareableReceiptModal = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Money Transfer Receipt',
-          text: `Transfer of AED ${transferData.amount} to ${transferData.recipient?.name} completed successfully.`,
+          title: 'Al Ghurair Exchange - Money Transfer Receipt',
+          text: `Transfer of AED ${transferData.amount} to ${transferData.recipient?.name} completed successfully via Al Ghurair Exchange.`,
           url: window.location.href
         });
       } catch (error) {
@@ -672,7 +680,7 @@ const ShareableReceiptModal = ({
       }
     } else {
       // Fallback to copying to clipboard
-      const shareText = `Transfer Receipt\nAmount: AED ${transferData.amount}\nRecipient: ${transferData.recipient?.name}\nTransaction ID: ${transferData.transactionId}`;
+      const shareText = `Al Ghurair Exchange - Transfer Receipt\nAmount: AED ${transferData.amount}\nRecipient: ${transferData.recipient?.name}\nTransaction ID: ${transferData.transactionId}\nTransfer via Al Ghurair Exchange`;
       navigator.clipboard.writeText(shareText);
       toast({
         title: "Receipt copied to clipboard",
@@ -682,8 +690,9 @@ const ShareableReceiptModal = ({
   };
 
   const handleDownload = () => {
-    // Create a downloadable receipt (simplified)
+    // Create a downloadable receipt with Al Ghurair branding
     const receiptContent = `
+      AL GHURAIR EXCHANGE
       MONEY TRANSFER RECEIPT
       ======================
       Date: ${currentDate}
@@ -698,13 +707,17 @@ const ShareableReceiptModal = ({
       EXCHANGE RATE: 1 AED = ${transferData.country?.rate} ${transferData.country?.currency}
       
       STATUS: COMPLETED
+      Transfer via Al Ghurair Exchange
+      
+      Thank you for choosing Al Ghurair Exchange
+      Your trusted money transfer partner
     `;
     
     const blob = new Blob([receiptContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `receipt-${transferData.transactionId}.txt`;
+    a.download = `al-ghurair-receipt-${transferData.transactionId}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -713,41 +726,50 @@ const ShareableReceiptModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white animate-scale-in">
+      <Card className="w-full max-w-md bg-white dark:bg-gray-800 animate-scale-in">
         <CardHeader className="text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="w-8 h-8 text-green-600" />
+          {/* Al Ghurair Logo */}
+          <div className="w-20 h-20 mx-auto mb-4 bg-white rounded-2xl shadow-lg flex items-center justify-center">
+            <img 
+              src="/lovable-uploads/43e1811d-01e3-492d-ae97-297a3e5efc27.png" 
+              alt="Al Ghurair Exchange"
+              className="w-16 h-16 object-contain"
+            />
           </div>
-          <CardTitle className="text-xl text-[#003D31]">Transfer Successful!</CardTitle>
-          <p className="text-sm text-[#918EA4]">{currentDate}</p>
+          <div className="w-16 h-16 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-green-600 dark:text-green-400" />
+          </div>
+          <CardTitle className="text-xl text-[#003D31] dark:text-white">Transfer Successful!</CardTitle>
+          <p className="text-sm text-[#918EA4] dark:text-gray-400">{currentDate}</p>
+          <p className="text-xs text-[#003D31] dark:text-[#F0FF3D] font-medium mt-2">Transfer via Al Ghurair Exchange</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-[#FCFFEF] rounded-lg p-4 border border-[#F0FF3D]/30">
+          <div className="bg-[#FCFFEF] dark:bg-gray-700 rounded-lg p-4 border border-[#F0FF3D]/30 dark:border-gray-600">
             <div className="text-center mb-4">
-              <p className="text-2xl font-bold text-[#003D31]">AED {transferData.amount}</p>
-              <p className="text-sm text-[#918EA4]">sent successfully</p>
+              <p className="text-2xl font-bold text-[#003D31] dark:text-white">AED {transferData.amount}</p>
+              <p className="text-sm text-[#918EA4] dark:text-gray-400">sent successfully</p>
             </div>
             
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-[#918EA4]">To:</span>
-                <span className="font-medium text-[#171717]">{transferData.recipient?.name}</span>
+                <span className="text-[#918EA4] dark:text-gray-400">To:</span>
+                <span className="font-medium text-[#171717] dark:text-white">{transferData.recipient?.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#918EA4]">Country:</span>
-                <span className="font-medium text-[#171717]">
+                <span className="text-[#918EA4] dark:text-gray-400">Country:</span>
+                <span className="font-medium text-[#171717] dark:text-white">
                   {transferData.country?.flag} {transferData.country?.name}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#918EA4]">Amount Received:</span>
-                <span className="font-medium text-[#171717]">
+                <span className="text-[#918EA4] dark:text-gray-400">Amount Received:</span>
+                <span className="font-medium text-[#171717] dark:text-white">
                   {transferData.country?.currency} {transferData.convertedAmount}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#918EA4]">Transaction ID:</span>
-                <span className="font-mono text-xs text-[#171717]">{transferData.transactionId}</span>
+                <span className="text-[#918EA4] dark:text-gray-400">Transaction ID:</span>
+                <span className="font-mono text-xs text-[#171717] dark:text-white">{transferData.transactionId}</span>
               </div>
             </div>
           </div>
@@ -756,7 +778,7 @@ const ShareableReceiptModal = ({
             <Button
               variant="outline"
               onClick={handleShare}
-              className="flex-1 h-12"
+              className="flex-1 h-12 dark:border-gray-600 dark:hover:bg-gray-700"
             >
               <Share className="w-4 h-4 mr-2" />
               Share
@@ -764,7 +786,7 @@ const ShareableReceiptModal = ({
             <Button
               variant="outline"
               onClick={handleDownload}
-              className="flex-1 h-12"
+              className="flex-1 h-12 dark:border-gray-600 dark:hover:bg-gray-700"
             >
               <Download className="w-4 h-4 mr-2" />
               Download
@@ -773,7 +795,7 @@ const ShareableReceiptModal = ({
 
           <Button
             onClick={onClose}
-            className="w-full h-12 bg-[#003D31] hover:bg-[#002822] text-white"
+            className="w-full h-12 bg-[#003D31] hover:bg-[#002822] dark:bg-[#F0FF3D] dark:hover:bg-[#E0EF2D] text-white dark:text-[#003D31]"
           >
             Done
           </Button>
