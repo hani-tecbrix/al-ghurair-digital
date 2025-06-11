@@ -1,12 +1,13 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, Plus, Search, Star, Check, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowRight, Plus, Search, Star, Check, X, RefreshCw, Share, Download, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
 
 type SendMoneyStep = 'amount' | 'beneficiary' | 'confirmation';
 
@@ -18,6 +19,16 @@ interface Recipient {
   bank?: string;
   favorite: boolean;
   accountTitle?: string;
+  country?: string;
+  countryCode?: string;
+}
+
+interface Country {
+  code: string;
+  name: string;
+  currency: string;
+  flag: string;
+  rate: number;
 }
 
 const SendMoneyPage = () => {
@@ -25,8 +36,23 @@ const SendMoneyPage = () => {
   const [step, setStep] = useState<SendMoneyStep>('amount');
   const [amount, setAmount] = useState('');
   const [selectedRecipient, setSelectedRecipient] = useState<Recipient | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNewBeneficiary, setShowNewBeneficiary] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [isLoadingRates, setIsLoadingRates] = useState(false);
+
+  // Mock countries with live rates
+  const countries: Country[] = [
+    { code: 'US', name: 'United States', currency: 'USD', flag: '🇺🇸', rate: 0.27 },
+    { code: 'GB', name: 'United Kingdom', currency: 'GBP', flag: '🇬🇧', rate: 0.22 },
+    { code: 'EU', name: 'European Union', currency: 'EUR', flag: '🇪🇺', rate: 0.25 },
+    { code: 'IN', name: 'India', currency: 'INR', flag: '🇮🇳', rate: 22.58 },
+    { code: 'PK', name: 'Pakistan', currency: 'PKR', flag: '🇵🇰', rate: 76.25 },
+    { code: 'BD', name: 'Bangladesh', currency: 'BDT', flag: '🇧🇩', rate: 29.12 },
+    { code: 'PH', name: 'Philippines', currency: 'PHP', flag: '🇵🇭', rate: 15.34 },
+    { code: 'EG', name: 'Egypt', currency: 'EGP', flag: '🇪🇬', rate: 8.45 },
+  ];
 
   const recentRecipients: Recipient[] = [
     { 
@@ -36,7 +62,9 @@ const SendMoneyPage = () => {
       type: 'iban',
       bank: 'Emirates NBD', 
       favorite: true,
-      accountTitle: 'Ahmed Al Mansouri'
+      accountTitle: 'Ahmed Al Mansouri',
+      country: 'United States',
+      countryCode: 'US'
     },
     { 
       id: '2', 
@@ -45,7 +73,9 @@ const SendMoneyPage = () => {
       type: 'mobile',
       bank: 'ADCB Wallet', 
       favorite: false,
-      accountTitle: 'Sara Mohammad'
+      accountTitle: 'Sara Mohammad',
+      country: 'India',
+      countryCode: 'IN'
     },
     { 
       id: '3', 
@@ -54,7 +84,9 @@ const SendMoneyPage = () => {
       type: 'bank',
       bank: 'ENBD', 
       favorite: true,
-      accountTitle: 'Omar Hassan Al Zaabi'
+      accountTitle: 'Omar Hassan Al Zaabi',
+      country: 'Pakistan',
+      countryCode: 'PK'
     },
   ];
 
@@ -64,7 +96,7 @@ const SendMoneyPage = () => {
   );
 
   const handleAmountContinue = () => {
-    if (amount && parseFloat(amount) > 0) {
+    if (amount && parseFloat(amount) > 0 && selectedCountry) {
       setStep('beneficiary');
     }
   };
@@ -78,13 +110,47 @@ const SendMoneyPage = () => {
     setShowNewBeneficiary(true);
   };
 
+  const handleCountrySelect = (countryCode: string) => {
+    const country = countries.find(c => c.code === countryCode);
+    if (country) {
+      setSelectedCountry(country);
+      setIsLoadingRates(true);
+      // Simulate live rate fetching
+      setTimeout(() => {
+        setIsLoadingRates(false);
+      }, 1000);
+    }
+  };
+
+  const getConvertedAmount = () => {
+    if (!amount || !selectedCountry) return '0.00';
+    return (parseFloat(amount) * selectedCountry.rate).toFixed(2);
+  };
+
+  const handleSendMoney = () => {
+    // Trigger haptic feedback (vibration)
+    if ('vibrate' in navigator) {
+      navigator.vibrate([200, 100, 200]);
+    }
+    
+    // Show success toast
+    toast({
+      title: "Transfer Successful!",
+      description: `AED ${amount} sent to ${selectedRecipient?.name}`,
+      duration: 3000,
+    });
+    
+    // Show receipt modal
+    setShowReceiptModal(true);
+  };
+
   const renderAmountStep = () => (
     <div className="space-y-6 animate-fade-in">
       <Card className="border-0 shadow-sm bg-gradient-to-br from-[#FCFFEF] to-white">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm text-[#918EA4]">Amount to Send</CardTitle>
+          <CardTitle className="text-sm text-[#918EA4]">International Transfer Amount</CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-0 space-y-4">
           <div className="flex items-center space-x-2">
             <span className="text-2xl font-bold text-[#003D31]">AED</span>
             <Input
@@ -96,7 +162,58 @@ const SendMoneyPage = () => {
               autoFocus
             />
           </div>
-          <div className="flex items-center space-x-2 mt-6">
+          
+          {/* Country Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-[#171717]">Transfer to Country</label>
+            <Select onValueChange={handleCountrySelect}>
+              <SelectTrigger className="w-full h-12 border-2 border-[#F6F7F9] focus:border-[#003D31]">
+                <SelectValue placeholder="Select destination country" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
+                {countries.map((country) => (
+                  <SelectItem key={country.code} value={country.code} className="hover:bg-gray-50">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-lg">{country.flag}</span>
+                      <div>
+                        <p className="font-medium">{country.name}</p>
+                        <p className="text-xs text-[#918EA4]">{country.currency}</p>
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Live Currency Conversion */}
+          {selectedCountry && (
+            <div className="bg-gradient-to-r from-[#003D31]/5 to-[#F0FF3D]/20 rounded-lg p-4 border border-[#F0FF3D]/30">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <Globe className="w-4 h-4 text-[#003D31]" />
+                  <span className="text-sm font-medium text-[#003D31]">Live Exchange Rate</span>
+                  {isLoadingRates && <RefreshCw className="w-4 h-4 animate-spin text-[#003D31]" />}
+                </div>
+                <Badge variant="secondary" className="bg-[#F0FF3D] text-[#003D31]">
+                  Live
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-[#918EA4]">
+                  1 AED = {selectedCountry.rate} {selectedCountry.currency}
+                </span>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-[#003D31]">
+                    {selectedCountry.currency} {getConvertedAmount()}
+                  </p>
+                  <p className="text-xs text-[#918EA4]">Recipient will receive</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center space-x-2">
             {['100', '250', '500', '1000'].map((preset) => (
               <Button
                 key={preset}
@@ -124,10 +241,10 @@ const SendMoneyPage = () => {
 
       <Button
         onClick={handleAmountContinue}
-        disabled={!amount || parseFloat(amount) <= 0}
+        disabled={!amount || parseFloat(amount) <= 0 || !selectedCountry}
         className="w-full h-12 bg-[#003D31] hover:bg-[#002822] text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
       >
-        Continue
+        Continue to Beneficiary
         <ArrowRight className="w-4 h-4 ml-2" />
       </Button>
     </div>
@@ -138,8 +255,10 @@ const SendMoneyPage = () => {
       <div className="bg-[#FCFFEF] rounded-lg p-4 border border-[#F0FF3D]/30">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-[#918EA4]">Sending Amount</p>
-            <p className="text-xl font-bold text-[#003D31]">AED {amount}</p>
+            <p className="text-sm text-[#918EA4]">Sending to {selectedCountry?.name}</p>
+            <p className="text-xl font-bold text-[#003D31]">
+              AED {amount} → {selectedCountry?.currency} {getConvertedAmount()}
+            </p>
           </div>
           <Button
             variant="ghost"
@@ -199,9 +318,16 @@ const SendMoneyPage = () => {
                         <p className="text-sm text-[#918EA4]">
                           {recipient.bank} • {recipient.identifier.slice(-4).padStart(recipient.identifier.length, '*')}
                         </p>
-                        <Badge variant="outline" className="text-xs mt-1">
-                          {recipient.type === 'iban' ? 'IBAN' : recipient.type === 'mobile' ? 'Mobile' : 'Bank Account'}
-                        </Badge>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {recipient.type === 'iban' ? 'IBAN' : recipient.type === 'mobile' ? 'Mobile' : 'Bank Account'}
+                          </Badge>
+                          {recipient.country && (
+                            <Badge variant="secondary" className="text-xs">
+                              {recipient.country}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <ArrowRight className="w-5 h-5 text-[#918EA4] group-hover:text-[#003D31] transition-colors" />
@@ -221,21 +347,33 @@ const SendMoneyPage = () => {
         <CardHeader>
           <CardTitle className="text-lg text-[#003D31] flex items-center">
             <Check className="w-5 h-5 mr-2" />
-            Transfer Summary
+            International Transfer Summary
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex justify-between items-center py-2 border-b border-[#F6F7F9]">
-            <span className="text-[#918EA4]">Amount</span>
+            <span className="text-[#918EA4]">You Send</span>
             <span className="font-semibold text-[#171717]">AED {amount}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-[#F6F7F9]">
+            <span className="text-[#918EA4]">Recipient Gets</span>
+            <span className="font-semibold text-[#171717]">
+              {selectedCountry?.currency} {getConvertedAmount()}
+            </span>
+          </div>
+          <div className="flex justify-between items-center py-2 border-b border-[#F6F7F9]">
+            <span className="text-[#918EA4]">Exchange Rate</span>
+            <span className="font-semibold text-[#171717]">
+              1 AED = {selectedCountry?.rate} {selectedCountry?.currency}
+            </span>
+          </div>
+          <div className="flex justify-between items-center py-2 border-b border-[#F6F7F9]">
             <span className="text-[#918EA4]">Transfer Fee</span>
-            <span className="font-semibold text-[#171717]">AED 5.00</span>
+            <span className="font-semibold text-[#171717]">AED 15.00</span>
           </div>
           <div className="flex justify-between items-center py-2">
             <span className="text-[#918EA4] font-medium">Total Amount</span>
-            <span className="font-bold text-[#003D31] text-lg">AED {(parseFloat(amount) + 5).toFixed(2)}</span>
+            <span className="font-bold text-[#003D31] text-lg">AED {(parseFloat(amount) + 15).toFixed(2)}</span>
           </div>
         </CardContent>
       </Card>
@@ -250,7 +388,12 @@ const SendMoneyPage = () => {
               <p className="font-medium text-[#171717]">{selectedRecipient?.name}</p>
               <p className="text-sm text-[#918EA4]">{selectedRecipient?.accountTitle}</p>
               <p className="text-sm text-[#918EA4]">{selectedRecipient?.bank}</p>
-              <p className="text-xs text-[#918EA4] font-mono">{selectedRecipient?.identifier}</p>
+              <div className="flex items-center space-x-2 mt-1">
+                <p className="text-xs text-[#918EA4] font-mono">{selectedRecipient?.identifier}</p>
+                <Badge variant="secondary" className="text-xs">
+                  {selectedCountry?.flag} {selectedRecipient?.country}
+                </Badge>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -266,10 +409,7 @@ const SendMoneyPage = () => {
           Cancel
         </Button>
         <Button
-          onClick={() => {
-            // Handle transfer logic here
-            console.log('Processing transfer...');
-          }}
+          onClick={handleSendMoney}
           className="flex-1 h-12 bg-[#003D31] hover:bg-[#002822] text-white font-medium"
         >
           <Check className="w-4 h-4 mr-2" />
@@ -315,9 +455,28 @@ const SendMoneyPage = () => {
         <NewBeneficiaryModal 
           onClose={() => setShowNewBeneficiary(false)}
           onSave={(recipient) => {
-            setSelectedRecipient(recipient);
+            const recipientWithCountry = {
+              ...recipient,
+              country: selectedCountry?.name,
+              countryCode: selectedCountry?.code
+            };
+            setSelectedRecipient(recipientWithCountry);
             setShowNewBeneficiary(false);
             setStep('confirmation');
+          }}
+          selectedCountry={selectedCountry}
+        />
+      )}
+
+      {showReceiptModal && (
+        <ShareableReceiptModal 
+          onClose={() => setShowReceiptModal(false)}
+          transferData={{
+            amount,
+            recipient: selectedRecipient,
+            country: selectedCountry,
+            convertedAmount: getConvertedAmount(),
+            transactionId: `TXN${Date.now()}`
           }}
         />
       )}
@@ -325,8 +484,16 @@ const SendMoneyPage = () => {
   );
 };
 
-// New Beneficiary Modal Component
-const NewBeneficiaryModal = ({ onClose, onSave }: { onClose: () => void; onSave: (recipient: Recipient) => void }) => {
+// Updated New Beneficiary Modal Component
+const NewBeneficiaryModal = ({ 
+  onClose, 
+  onSave, 
+  selectedCountry 
+}: { 
+  onClose: () => void; 
+  onSave: (recipient: Recipient) => void;
+  selectedCountry: Country | null;
+}) => {
   const [identifier, setIdentifier] = useState('');
   const [detectedType, setDetectedType] = useState<'iban' | 'mobile' | 'bank' | null>(null);
   const [bankDetails, setBankDetails] = useState({
@@ -374,7 +541,9 @@ const NewBeneficiaryModal = ({ onClose, onSave }: { onClose: () => void; onSave:
       type: detectedType!,
       bank: bankDetails.bankName,
       favorite: false,
-      accountTitle: bankDetails.accountTitle
+      accountTitle: bankDetails.accountTitle,
+      country: selectedCountry?.name,
+      countryCode: selectedCountry?.code
     };
     onSave(newRecipient);
   };
@@ -383,7 +552,9 @@ const NewBeneficiaryModal = ({ onClose, onSave }: { onClose: () => void; onSave:
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-white animate-scale-in">
         <CardHeader>
-          <CardTitle className="text-lg text-[#003D31]">Add New Beneficiary</CardTitle>
+          <CardTitle className="text-lg text-[#003D31]">
+            Add New Beneficiary in {selectedCountry?.flag} {selectedCountry?.name}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -396,7 +567,7 @@ const NewBeneficiaryModal = ({ onClose, onSave }: { onClose: () => void; onSave:
                 setIdentifier(e.target.value);
                 detectIdentifierType(e.target.value);
               }}
-              placeholder="AE070331234567890123456"
+              placeholder="Enter beneficiary details"
               className="w-full"
             />
             {detectedType && (
@@ -460,6 +631,152 @@ const NewBeneficiaryModal = ({ onClose, onSave }: { onClose: () => void; onSave:
               Save & Continue
             </Button>
           </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// New Shareable Receipt Modal Component
+const ShareableReceiptModal = ({ 
+  onClose, 
+  transferData 
+}: { 
+  onClose: () => void; 
+  transferData: {
+    amount: string;
+    recipient: Recipient | null;
+    country: Country | null;
+    convertedAmount: string;
+    transactionId: string;
+  };
+}) => {
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Money Transfer Receipt',
+          text: `Transfer of AED ${transferData.amount} to ${transferData.recipient?.name} completed successfully.`,
+          url: window.location.href
+        });
+      } catch (error) {
+        console.log('Error sharing:', error);
+      }
+    } else {
+      // Fallback to copying to clipboard
+      const shareText = `Transfer Receipt\nAmount: AED ${transferData.amount}\nRecipient: ${transferData.recipient?.name}\nTransaction ID: ${transferData.transactionId}`;
+      navigator.clipboard.writeText(shareText);
+      toast({
+        title: "Receipt copied to clipboard",
+        description: "You can now paste it anywhere to share",
+      });
+    }
+  };
+
+  const handleDownload = () => {
+    // Create a downloadable receipt (simplified)
+    const receiptContent = `
+      MONEY TRANSFER RECEIPT
+      ======================
+      Date: ${currentDate}
+      Transaction ID: ${transferData.transactionId}
+      
+      FROM: Your Account
+      TO: ${transferData.recipient?.name}
+      COUNTRY: ${transferData.country?.name}
+      
+      AMOUNT SENT: AED ${transferData.amount}
+      AMOUNT RECEIVED: ${transferData.country?.currency} ${transferData.convertedAmount}
+      EXCHANGE RATE: 1 AED = ${transferData.country?.rate} ${transferData.country?.currency}
+      
+      STATUS: COMPLETED
+    `;
+    
+    const blob = new Blob([receiptContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `receipt-${transferData.transactionId}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white animate-scale-in">
+        <CardHeader className="text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-green-600" />
+          </div>
+          <CardTitle className="text-xl text-[#003D31]">Transfer Successful!</CardTitle>
+          <p className="text-sm text-[#918EA4]">{currentDate}</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-[#FCFFEF] rounded-lg p-4 border border-[#F0FF3D]/30">
+            <div className="text-center mb-4">
+              <p className="text-2xl font-bold text-[#003D31]">AED {transferData.amount}</p>
+              <p className="text-sm text-[#918EA4]">sent successfully</p>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-[#918EA4]">To:</span>
+                <span className="font-medium text-[#171717]">{transferData.recipient?.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#918EA4]">Country:</span>
+                <span className="font-medium text-[#171717]">
+                  {transferData.country?.flag} {transferData.country?.name}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#918EA4]">Amount Received:</span>
+                <span className="font-medium text-[#171717]">
+                  {transferData.country?.currency} {transferData.convertedAmount}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#918EA4]">Transaction ID:</span>
+                <span className="font-mono text-xs text-[#171717]">{transferData.transactionId}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex space-x-3">
+            <Button
+              variant="outline"
+              onClick={handleShare}
+              className="flex-1 h-12"
+            >
+              <Share className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleDownload}
+              className="flex-1 h-12"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download
+            </Button>
+          </div>
+
+          <Button
+            onClick={onClose}
+            className="w-full h-12 bg-[#003D31] hover:bg-[#002822] text-white"
+          >
+            Done
+          </Button>
         </CardContent>
       </Card>
     </div>
