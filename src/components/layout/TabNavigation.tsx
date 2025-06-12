@@ -23,12 +23,6 @@ const TabNavigation = () => {
       path: '/services'
     },
     {
-      id: 'transactions',
-      label: t('nav.transactions'),
-      icon: Receipt,
-      path: '/transactions'
-    },
-    {
       id: 'profile',
       label: t('nav.profile'),
       icon: User,
